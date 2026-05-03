@@ -16,6 +16,8 @@ import {
   LogOut,
   LayoutDashboard
 } from "lucide-react";
+import { useCart } from "@/store/cart";
+import { CartSheet } from "@/components/layout/cart-sheet";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -210,6 +212,8 @@ function MobileAuthSection() {
 
 export function Header() {
   const [isHidden, setIsHidden] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { count } = useCart();
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -258,15 +262,20 @@ export function Header() {
           <UserMenu />
 
           <div className="relative">
-            <Button variant="default" size="sm" className="gap-1.5" asChild>
-              <Link href="/cart">
-                <ShoppingCart className="size-3.5" />
-                <span className="hidden sm:inline">Cart</span>
-              </Link>
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setCartOpen(true)}
+            >
+              <ShoppingCart className="size-3.5" />
+              <span className="hidden sm:inline">Cart</span>
             </Button>
-            <span className="bg-foreground text-background pointer-events-none absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] leading-none font-bold">
-              0
-            </span>
+            {count > 0 && (
+              <span className="bg-foreground text-background pointer-events-none absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] leading-none font-bold">
+                {count}
+              </span>
+            )}
           </div>
 
           <Sheet>
@@ -304,17 +313,20 @@ export function Header() {
 
               <div className="border-border/50 mt-auto flex flex-col gap-2 border-t p-4">
                 <MobileAuthSection />
-                <Button variant="default" className="w-full gap-2" asChild>
-                  <Link href="/cart">
-                    <ShoppingCart className="size-4" />
-                    View Cart (0)
-                  </Link>
+                <Button
+                  variant="default"
+                  className="w-full gap-2"
+                  onClick={() => setCartOpen(true)}
+                >
+                  <ShoppingCart className="size-4" />
+                  View Cart{count > 0 ? ` (${count})` : ""}
                 </Button>
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+      <CartSheet open={cartOpen} onOpenChange={setCartOpen} />
     </motion.header>
   );
 }

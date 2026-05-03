@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         <span className="text-sm font-medium">Overview</span>
       </header>
       <Suspense fallback={<OverviewSkeleton role={role} />}>
-        <OverviewContent role={role} user={user} />
+        <OverviewContent role={role} user={user} userId={session.user.id} />
       </Suspense>
     </>
   );
@@ -36,10 +36,12 @@ export default async function DashboardPage() {
 
 async function OverviewContent({
   role,
-  user
+  user,
+  userId
 }: {
   role: AppRole;
   user: { name: string; createdAt: Date | string };
+  userId: string;
 }) {
   if (role === "admin") {
     const [dishRows, userRoles, totalDishes, availableDishes] = await Promise.all([
@@ -75,11 +77,82 @@ async function OverviewContent({
     );
   }
 
-  if (role === "chef") return <ChefOverview user={user} />;
+  if (role === "chef") {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [pendingCount, inProgressCount, completedTodayCount, allTimeCount] = await Promise.all([
+      prisma.order.count({ where: { status: "pending" } }),
+      prisma.order.count({ where: { chefId: userId, status: { in: ["accepted", "preparing"] } } }),
+      prisma.order.count({
+        where: {
+          chefId: userId,
+          status: { in: ["ready", "out_for_delivery", "delivered"] },
+          updatedAt: { gte: today }
+        }
+      }),
+      prisma.order.count({ where: { chefId: userId } })
+    ]);
+
+    return (
+      <ChefOverview
+        user={user}
+        pendingCount={pendingCount}
+        inProgressCount={inProgressCount}
+        completedTodayCount={completedTodayCount}
+        allTimeCount={allTimeCount}
+      />
+    );
+  }
   if (role === "delivery") return <DeliveryOverview user={user} />;
 
-  const availableDishCount = await prisma.dish.count({ where: { available: true } });
-  return <CustomerOverview user={user} availableDishCount={availableDishCount} />;
+  const [availableDishCount, totalOrders, activeOrderRows, recentOrderRows] = await Promise.all([
+    prisma.dish.count({ where: { available: true } }),
+    prisma.order.count({ where: { customerId: userId } }),
+    prisma.order.findMany({
+      where: {
+        customerId: userId,
+        status: { in: ["pending", "accepted", "preparing", "ready", "out_for_delivery"] }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 1,
+      include: { items: { select: { id: true } } }
+    }),
+    prisma.order.findMany({
+      where: { customerId: userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { items: { select: { id: true } } }
+    })
+  ]);
+
+  const latestActiveOrder = activeOrderRows[0]
+    ? {
+        id: activeOrderRows[0].id,
+        status: activeOrderRows[0].status,
+        total: Number(activeOrderRows[0].total),
+        itemCount: activeOrderRows[0].items.length
+      }
+    : null;
+
+  const recentOrders = recentOrderRows.map((o) => ({
+    id: o.id,
+    status: o.status,
+    createdAt: o.createdAt,
+    total: Number(o.total),
+    itemCount: o.items.length
+  }));
+
+  return (
+    <CustomerOverview
+      user={user}
+      availableDishCount={availableDishCount}
+      totalOrders={totalOrders}
+      activeOrderCount={activeOrderRows.length}
+      latestActiveOrder={latestActiveOrder}
+      recentOrders={recentOrders}
+    />
+  );
 }
 
 function OverviewSkeleton({ role }: { role: AppRole }) {

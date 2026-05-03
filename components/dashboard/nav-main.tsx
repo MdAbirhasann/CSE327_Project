@@ -21,7 +21,7 @@ interface NavItem {
 
 const customerNav: NavItem[] = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Menu", url: "/dashboard/menu", icon: UtensilsCrossed },
+  { title: "Menu", url: "/", icon: UtensilsCrossed },
   { title: "My Orders", url: "/dashboard/orders", icon: ShoppingBag }
 ];
 
