@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { requireAuth } from "@/lib/dal";
+import { guardPermission } from "@/lib/dal";
 import { createDish } from "@/actions/dishes/create-dish";
 import { DishForm } from "../dish-form";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewDishPage() {
-  await requireAuth();
+  await guardPermission({ dish: ["create"] });
 
   return (
     <>

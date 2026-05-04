@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ChefHat } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { requirePermission } from "@/lib/dal";
+import { guardPermission } from "@/lib/dal";
 import prisma from "@/lib/prisma";
 import { KitchenOrderCard, type KitchenOrder } from "./kitchen-order-card";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KitchenPage() {
-  const session = await requirePermission({ kitchen: ["access"] });
+  const session = await guardPermission({ kitchen: ["access"] });
   const chefId = session.user.id;
 
   const orderSelect = {

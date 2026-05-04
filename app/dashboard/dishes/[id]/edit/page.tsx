@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireAuth } from "@/lib/dal";
+import { guardPermission } from "@/lib/dal";
 import prisma from "@/lib/prisma";
 import { updateDish } from "@/actions/dishes/update-dish";
 import { DishForm } from "../../dish-form";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EditDishPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAuth();
+  await guardPermission({ dish: ["update"] });
   const { id } = await params;
 
   return (

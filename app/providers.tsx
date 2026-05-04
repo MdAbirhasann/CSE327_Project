@@ -13,7 +13,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           height="2px"
           color="oklch(0.514 0.222 16.935)"
           options={{ showSpinner: false }}
-          shallowRouting
         />
         {children}
         <Toaster richColors />

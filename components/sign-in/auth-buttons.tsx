@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Fingerprint } from "lucide-react";
+import { Fingerprint, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 
@@ -61,6 +62,12 @@ function getPasskeyError(code?: string | null): string {
 }
 
 export function AuthButtons() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const { data: session } = authClient.useSession();
+  const isAddingAccount = !!session?.user;
+
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
 
@@ -68,7 +75,7 @@ export function AuthButtons() {
     setIsGoogleLoading(true);
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/"
+      callbackURL: callbackUrl
     });
     setIsGoogleLoading(false);
   }
@@ -84,20 +91,40 @@ export function AuthButtons() {
       } else {
         toast.error(message);
       }
+    } else {
+      router.replace(callbackUrl);
     }
     setIsPasskeyLoading(false);
   }
 
   return (
     <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="lg:text-foreground text-2xl font-semibold tracking-tight text-white">
-          Sign in
-        </h1>
-        <p className="lg:text-muted-foreground text-sm text-white/60">
-          Access your orders, track deliveries, and explore our menu.
-        </p>
-      </div>
+      {isAddingAccount ? (
+        <div className="flex items-start gap-3">
+          <UserPlus
+            className="mt-0.5 size-5 shrink-0 text-white lg:text-zinc-500"
+            strokeWidth={1.75}
+          />
+          <div className="space-y-0.5">
+            <p className="lg:text-foreground text-sm font-semibold text-white">
+              Add another account
+            </p>
+            <p className="lg:text-muted-foreground text-xs text-white/60">
+              Signed in as <span className="font-medium">{session.user.name}</span>. Sign in below
+              to add a second account.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <h1 className="lg:text-foreground text-2xl font-semibold tracking-tight text-white">
+            Sign in
+          </h1>
+          <p className="lg:text-muted-foreground text-sm text-white/60">
+            Access your orders, track deliveries, and explore our menu.
+          </p>
+        </div>
+      )}
 
       <button
         type="button"

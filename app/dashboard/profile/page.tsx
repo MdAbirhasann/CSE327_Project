@@ -4,6 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { UpdateProfileForm } from "./update-profile-form";
 import { ManagePasskeys } from "./manage-passkeys";
+import { ManageSessions } from "./manage-sessions";
 
 export const metadata: Metadata = {
   title: "Profile | Crunch Time"
@@ -34,6 +35,9 @@ export default async function ProfilePage() {
           />
           <div id="passkeys">
             <ManagePasskeys />
+          </div>
+          <div id="sessions">
+            <ManageSessions currentToken={session.session.token} />
           </div>
         </div>
       </div>

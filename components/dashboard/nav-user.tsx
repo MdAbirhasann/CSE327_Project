@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { ChevronsUpDown, LogOut, User, KeyRound, Sun, Moon } from "lucide-react";
+import { ChevronsUpDown, LogOut, User, KeyRound, Sun, Moon, MonitorSmartphone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -115,6 +115,12 @@ export function NavUser({ user }: NavUserProps) {
                 <Link href="/dashboard/profile#passkeys" onClick={() => setOpenMobile(false)}>
                   <KeyRound className="size-4" />
                   Manage Passkeys
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile#sessions" onClick={() => setOpenMobile(false)}>
+                  <MonitorSmartphone className="size-4" />
+                  Manage Sessions
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { passkey } from "@better-auth/passkey";
 import { nextCookies } from "better-auth/next-js";
-import { admin as adminPlugin } from "better-auth/plugins";
+import { admin as adminPlugin, multiSession } from "better-auth/plugins";
 import prisma from "@/lib/prisma";
 import { ac, customer, chef, delivery, adminRole } from "@/lib/access";
 
@@ -27,6 +27,7 @@ export const auth = betterAuth({
       }
     }),
     nextCookies(),
+    multiSession(),
     adminPlugin({
       ac,
       roles: { customer, chef, delivery, admin: adminRole },
