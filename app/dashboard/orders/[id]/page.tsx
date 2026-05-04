@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { ArrowLeft, MapPin, CreditCard, Banknote, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, CreditCard, Banknote, Clock, NotebookPen } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { requireAuth } from "@/lib/dal";
@@ -14,6 +14,8 @@ import {
   STATUS_BADGE
 } from "@/lib/order-stages";
 import { OrderProgressBar } from "@/components/dashboard/order-progress-bar";
+import { OrderPoller } from "./order-poller";
+import { CancelButton } from "./cancel-button";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -47,6 +49,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <>
+      <OrderPoller status={order.status} />
       <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mx-1 h-4" />
@@ -75,6 +78,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {statusLabel}
           </span>
           <p className="text-muted-foreground mt-1 max-w-sm text-sm">{statusDesc}</p>
+          {order.status === "cancelled" && order.cancellationReason && (
+            <p className="text-muted-foreground mt-1 text-xs">Reason: {order.cancellationReason}</p>
+          )}
+          {order.status === "pending" && isOwner && (
+            <div className="mt-3">
+              <CancelButton orderId={order.id} />
+            </div>
+          )}
         </div>
 
         {order.status !== "rejected" && order.status !== "cancelled" && (
@@ -92,12 +103,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </div>
             <div className="divide-y">
               {order.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between px-5 py-3">
+                <div key={item.id} className="flex items-start justify-between px-5 py-3">
                   <div>
                     <p className="text-sm font-medium">{item.dishName}</p>
                     <p className="text-muted-foreground text-xs">
                       {item.quantity} × ৳{Number(item.unitPrice).toFixed(0)}
                     </p>
+                    {item.specialInstructions && (
+                      <p className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs italic">
+                        <NotebookPen className="h-3 w-3 shrink-0" />
+                        {item.specialInstructions}
+                      </p>
+                    )}
                   </div>
                   <span className="text-sm font-semibold tabular-nums">
                     ৳{(Number(item.unitPrice) * item.quantity).toFixed(0)}

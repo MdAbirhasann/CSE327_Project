@@ -42,7 +42,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     e.preventDefault();
     startTransition(async () => {
       const result = await placeOrder(
-        items.map((i) => ({ dishId: i.dishId, quantity: i.quantity })),
+        items.map((i) => ({ dishId: i.dishId, quantity: i.quantity, note: i.note })),
         address,
         paymentMethod
       );

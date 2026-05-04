@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Minus, Plus, ShoppingCart, UtensilsCrossed } from "lucide-react";
+import { Minus, Plus, ShoppingCart, UtensilsCrossed, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,8 +23,15 @@ type Section = {
   dishes: Dish[];
 };
 
-export function DishGridClient({ sections }: { sections: Section[] }) {
+export function DishGridClient({
+  sections,
+  bestsellerIds = []
+}: {
+  sections: Section[];
+  bestsellerIds?: string[];
+}) {
   const [selected, setSelected] = useState<Dish | null>(null);
+  const bestsellerSet = new Set(bestsellerIds);
 
   return (
     <>
@@ -47,7 +54,12 @@ export function DishGridClient({ sections }: { sections: Section[] }) {
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
               {section.dishes.map((dish) => (
-                <DishCard key={dish.id} dish={dish} onSelect={() => setSelected(dish)} />
+                <DishCard
+                  key={dish.id}
+                  dish={dish}
+                  isBestseller={bestsellerSet.has(dish.id)}
+                  onSelect={() => setSelected(dish)}
+                />
               ))}
             </div>
           </div>
@@ -57,6 +69,7 @@ export function DishGridClient({ sections }: { sections: Section[] }) {
       <DishDetailDialog
         key={selected?.id}
         dish={selected}
+        isBestseller={selected ? bestsellerSet.has(selected.id) : false}
         open={!!selected}
         onClose={() => setSelected(null)}
       />
@@ -64,7 +77,15 @@ export function DishGridClient({ sections }: { sections: Section[] }) {
   );
 }
 
-function DishCard({ dish, onSelect }: { dish: Dish; onSelect: () => void }) {
+function DishCard({
+  dish,
+  isBestseller,
+  onSelect
+}: {
+  dish: Dish;
+  isBestseller: boolean;
+  onSelect: () => void;
+}) {
   const { items } = useCart();
   const cartItem = items.find((i) => i.dishId === dish.id);
 
@@ -87,10 +108,16 @@ function DishCard({ dish, onSelect }: { dish: Dish; onSelect: () => void }) {
         </div>
       )}
 
-      <div className="absolute top-3 left-3">
+      <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
         <span className="bg-black/50 px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-white/75 uppercase backdrop-blur-sm">
           {dish.category}
         </span>
+        {isBestseller && (
+          <span className="flex items-center gap-1 bg-amber-500 px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
+            <Flame className="h-2.5 w-2.5" />
+            Bestseller
+          </span>
+        )}
       </div>
 
       {cartItem && (
@@ -126,10 +153,12 @@ function DishCard({ dish, onSelect }: { dish: Dish; onSelect: () => void }) {
 
 function DishDetailDialog({
   dish,
+  isBestseller,
   open,
   onClose
 }: {
   dish: Dish | null;
+  isBestseller: boolean;
   open: boolean;
   onClose: () => void;
 }) {
@@ -176,9 +205,17 @@ function DishDetailDialog({
 
         <div className="p-6">
           <DialogHeader className="mb-1 space-y-1 text-left">
-            <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
-              {dish.category}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+                {dish.category}
+              </span>
+              {isBestseller && (
+                <span className="flex items-center gap-1 bg-amber-500 px-2 py-0.5 text-[9px] font-bold tracking-wide text-white uppercase">
+                  <Flame className="h-2.5 w-2.5" />
+                  Bestseller
+                </span>
+              )}
+            </div>
             <DialogTitle className="text-xl">{dish.name}</DialogTitle>
           </DialogHeader>
 

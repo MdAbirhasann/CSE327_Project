@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Minus, Plus, ShoppingCart, Trash2, UtensilsCrossed } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2, UtensilsCrossed, NotebookPen } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart";
@@ -15,7 +15,7 @@ interface CartSheetProps {
 
 export function CartSheet({ open, onOpenChange }: CartSheetProps) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const { items, removeItem, setQuantity, total, count } = useCart();
+  const { items, removeItem, setQuantity, setNote, total, count } = useCart();
 
   function openCheckout() {
     onOpenChange(false);
@@ -103,6 +103,17 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
+                        </div>
+                        <div className="mt-2 flex items-center gap-1.5">
+                          <NotebookPen className="text-muted-foreground h-3 w-3 shrink-0" />
+                          <input
+                            type="text"
+                            value={item.note ?? ""}
+                            onChange={(e) => setNote(item.dishId, e.target.value)}
+                            placeholder="Add a note…"
+                            maxLength={100}
+                            className="text-muted-foreground placeholder:text-muted-foreground/50 focus:text-foreground w-full bg-transparent text-xs focus:outline-none"
+                          />
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">

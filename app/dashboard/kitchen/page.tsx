@@ -18,7 +18,7 @@ export default async function KitchenPage() {
     id: true,
     total: true,
     createdAt: true,
-    items: { select: { dishName: true, quantity: true } }
+    items: { select: { dishName: true, quantity: true, specialInstructions: true } }
   } as const;
 
   const [pendingRows, inProgressRows, readyRows] = await Promise.all([

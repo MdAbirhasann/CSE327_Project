@@ -5,19 +5,29 @@ import prisma from "@/lib/prisma";
 import { DishGridClient } from "./dish-grid-client";
 
 export async function DishGrid() {
-  const rawDishes = await prisma.dish.findMany({
-    where: { available: true },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      price: true,
-      imageUrl: true,
-      category: true
-    }
-  });
+  const [rawDishes, topOrdered] = await Promise.all([
+    prisma.dish.findMany({
+      where: { available: true },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        category: true
+      }
+    }),
+    prisma.orderItem.groupBy({
+      by: ["dishId"],
+      _count: { dishId: true },
+      orderBy: { _count: { dishId: "desc" } },
+      take: 5,
+      where: { dishId: { not: null } }
+    })
+  ]);
 
+  const bestsellerIds = topOrdered.map((r) => r.dishId!);
   const dishes = rawDishes.map((d) => ({ ...d, price: Number(d.price) }));
 
   const sections = DISH_CATEGORIES.map((cat) => ({
@@ -48,7 +58,7 @@ export async function DishGrid() {
           <MenuHeader />
         </div>
       </div>
-      <DishGridClient sections={sections} />
+      <DishGridClient sections={sections} bestsellerIds={bestsellerIds} />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/dal";
 import { ACTIVE_STATUSES } from "@/lib/order-stages";
 import { isDhakaAddress } from "@/lib/address-validation";
 
-type OrderItem = { dishId: string; quantity: number };
+type OrderItem = { dishId: string; quantity: number; note?: string };
 
 export async function placeOrder(
   items: OrderItem[],
@@ -58,7 +58,8 @@ export async function placeOrder(
       dishId: item.dishId,
       dishName: dish.name,
       unitPrice: dish.price,
-      quantity: item.quantity
+      quantity: item.quantity,
+      specialInstructions: item.note?.trim() || null
     };
   });
 

@@ -7,13 +7,15 @@ export type CartItem = {
   unitPrice: number;
   quantity: number;
   imageUrl: string | null;
+  note?: string;
 };
 
 type CartStore = {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
+  addItem: (item: Omit<CartItem, "quantity" | "note">, quantity?: number) => void;
   removeItem: (dishId: string) => void;
   setQuantity: (dishId: string, quantity: number) => void;
+  setNote: (dishId: string, note: string) => void;
   clear: () => void;
 };
 
@@ -41,6 +43,10 @@ const useCartStore = create<CartStore>()(
             quantity <= 0
               ? state.items.filter((i) => i.dishId !== dishId)
               : state.items.map((i) => (i.dishId === dishId ? { ...i, quantity } : i))
+        })),
+      setNote: (dishId, note) =>
+        set((state) => ({
+          items: state.items.map((i) => (i.dishId === dishId ? { ...i, note } : i))
         })),
       clear: () => set({ items: [] })
     }),

@@ -11,7 +11,7 @@ export type KitchenOrder = {
   id: string;
   total: number;
   createdAt: string;
-  items: Array<{ dishName: string; quantity: number }>;
+  items: Array<{ dishName: string; quantity: number; specialInstructions?: string | null }>;
 };
 
 type Variant = "new" | "inprogress" | "ready";
@@ -59,11 +59,18 @@ export function KitchenOrderCard({ order, variant }: KitchenOrderCardProps) {
         <span className="text-muted-foreground text-xs">{time}</span>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         {order.items.map((item, i) => (
-          <p key={i} className="text-sm">
-            {item.dishName} <span className="text-muted-foreground">× {item.quantity}</span>
-          </p>
+          <div key={i}>
+            <p className="text-sm">
+              {item.dishName} <span className="text-muted-foreground">× {item.quantity}</span>
+            </p>
+            {item.specialInstructions && (
+              <p className="text-muted-foreground mt-0.5 text-xs italic">
+                — {item.specialInstructions}
+              </p>
+            )}
+          </div>
         ))}
       </div>
 

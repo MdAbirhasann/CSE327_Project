@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ShoppingBag, ChevronRight } from "lucide-react";
+import { ReorderButton } from "./reorder-button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,44 +74,53 @@ async function OrdersContent({ userId, isAdmin }: { userId: string; isAdmin: boo
         const shortId = order.id.slice(-8).toUpperCase();
         const badgeClass = STATUS_BADGE[order.status] ?? STATUS_BADGE.cancelled;
         const isTerminal = ["delivered", "rejected", "cancelled"].includes(order.status);
+        const showReorder = isTerminal && !isAdmin;
 
         return (
-          <Link
-            key={order.id}
-            href={`/dashboard/orders/${order.id}`}
-            className="hover:bg-muted/40 flex flex-col gap-3 px-6 py-4 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">#{shortId}</span>
-                  <span
-                    className={cn(
-                      "px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
-                      badgeClass
-                    )}
-                  >
-                    {getStatusLabel(order.status)}
-                  </span>
+          <div key={order.id} className="flex">
+            <Link
+              href={`/dashboard/orders/${order.id}`}
+              className="hover:bg-muted/40 flex min-w-0 flex-1 flex-col gap-3 px-6 py-4 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">#{shortId}</span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
+                        badgeClass
+                      )}
+                    >
+                      {getStatusLabel(order.status)}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground mt-0.5 text-xs">
+                    {order.items.length} item{order.items.length !== 1 ? "s" : ""} · ৳
+                    {Number(order.total).toFixed(0)} ·{" "}
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit"
+                    }).format(new Date(order.createdAt))}
+                  </p>
+                  {isAdmin && "customer" in order && order.customer && (
+                    <p className="text-muted-foreground mt-0.5 text-xs">by {order.customer.name}</p>
+                  )}
                 </div>
-                <p className="text-muted-foreground mt-0.5 text-xs">
-                  {order.items.length} item{order.items.length !== 1 ? "s" : ""} · ৳
-                  {Number(order.total).toFixed(0)} ·{" "}
-                  {new Intl.DateTimeFormat("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit"
-                  }).format(new Date(order.createdAt))}
-                </p>
-                {isAdmin && "customer" in order && order.customer && (
-                  <p className="text-muted-foreground mt-0.5 text-xs">by {order.customer.name}</p>
+                {!showReorder && (
+                  <ChevronRight className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
                 )}
               </div>
-              <ChevronRight className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-            </div>
-            {!isTerminal && <OrderProgressBar status={order.status} />}
-          </Link>
+              {!isTerminal && <OrderProgressBar status={order.status} />}
+            </Link>
+            {showReorder && (
+              <div className="flex items-center px-4">
+                <ReorderButton orderId={order.id} />
+              </div>
+            )}
+          </div>
         );
       })}
     </div>
